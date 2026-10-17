@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Product Sales History{% endblock %}
+{% block content %}
+<div class="page-toolbar"><div><p>Customers, invoice dates, and quantities sold for this product.</p></div><a class="btn btn-outline-secondary" href="{{ url_for('products_page') }}">Back to products</a></div>
+<section class="surface-card"><div class="surface-card-header"><div><h2 class="section-title">{{ product.name }}</h2><p class="section-subtitle">{{ sales|length }} sale line(s)</p></div></div>{% if sales %}<div class="surface-card-body table-responsive"><table class="table table-hover"><thead><tr><th>Customer</th><th>Invoice</th><th>Date</th><th>Quantity</th></tr></thead><tbody>{% for sale in sales %}<tr><td><a href="{{ url_for('customer_sales_history_page', customer_id=sale.customer_id) }}">{{ sale.customer_name }}</a></td><td><a href="{{ url_for('sale_detail_page', sale_id=sale.sale_id) }}">{{ sale.invoice_reference }}</a></td><td>{{ sale.sale_date }}</td><td>{{ sale.quantity }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="surface-card-body"><p>No sales history has been recorded for this product.</p></div>{% endif %}</section>
+{% endblock %}

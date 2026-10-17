@@ -1,0 +1,22 @@
+<section class="surface-card mb-4">
+    <div class="surface-card-header"><div><h2 class="section-title">Payment status</h2><p class="section-subtitle">Balances are calculated from recorded payments.</p></div>
+        {% if invoice.is_overdue %}<span class="stock-badge out-stock">Overdue</span>{% elif invoice.payment_status == 'Paid' %}<span class="stock-badge in-stock">Paid</span>{% elif invoice.payment_status == 'Partially Paid' %}<span class="stock-badge low-stock">Partially Paid</span>{% else %}<span class="stock-badge out-stock">Unpaid</span>{% endif %}
+    </div>
+    <div class="surface-card-body">
+        <div class="row g-3 mb-4"><div class="col-sm-4"><span class="form-help">Invoice total</span><div><strong>&#8377;{{ '%.2f'|format(invoice.total) }}</strong></div></div><div class="col-sm-4"><span class="form-help">Amount {{ 'paid' if invoice_kind == 'purchase' else 'received' }}</span><div><strong>&#8377;{{ '%.2f'|format(invoice.amount_paid) }}</strong></div></div><div class="col-sm-4"><span class="form-help">Outstanding</span><div><strong>&#8377;{{ '%.2f'|format(invoice.outstanding) }}</strong></div></div><div class="col-sm-4"><span class="form-help">Due date</span><div>{{ invoice.due_date or 'Not set' }}</div></div></div>
+        {% if invoice.outstanding > 0 %}
+        <form method="post" action="{% if invoice_kind == 'purchase' %}{{ url_for('add_supplier_payment_page', purchase_id=invoice.id) }}{% else %}{{ url_for('add_customer_payment_page', sale_id=invoice.id) }}{% endif %}" class="border rounded-3 p-3 mb-4">
+            <input type="hidden" name="submission_token" value="{{ payment_token }}">
+            <h3 class="section-title mb-3">{{ 'Record payment' if invoice_kind == 'purchase' else 'Record receipt' }}</h3>
+            <div class="row g-3"><div class="col-md-3"><label class="form-label" for="payment-date">Date</label><input class="form-control" id="payment-date" type="date" name="payment_date" value="{{ today }}" required></div>
+            <div class="col-md-3"><label class="form-label" for="payment-amount">Amount (&#8377;)</label><input class="form-control" id="payment-amount" type="number" name="amount" min="0.01" max="{{ '%.2f'|format(invoice.outstanding) }}" step="0.01" required></div>
+            <div class="col-md-3"><label class="form-label" for="payment-method">Method</label><select class="form-select" id="payment-method" name="payment_method" required><option value="">Choose method</option>{% for method in payment_methods %}<option value="{{ method }}">{{ method }}</option>{% endfor %}</select></div>
+            <div class="col-md-3"><label class="form-label" for="payment-reference">Reference number (optional)</label><input class="form-control" id="payment-reference" name="reference_number" maxlength="120"></div>
+            <div class="col-12"><label class="form-label" for="payment-notes">Notes (optional)</label><input class="form-control" id="payment-notes" name="notes" maxlength="500"></div></div>
+            <div class="form-actions"><button class="btn btn-primary" type="submit">{{ 'Save payment' if invoice_kind == 'purchase' else 'Save receipt' }}</button></div>
+        </form>
+        {% else %}<div class="alert alert-success">This invoice is fully paid.</div>{% endif %}
+        <h3 class="section-title mb-3">Payment history</h3>
+        {% if payment_history %}<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th>Notes</th></tr></thead><tbody>{% for payment in payment_history %}<tr><td>{{ payment.payment_date }}</td><td>&#8377;{{ '%.2f'|format(payment.amount) }}</td><td>{{ payment.payment_method }}</td><td>{{ payment.reference_number or '—' }}</td><td>{{ payment.notes or '—' }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p>No payments have been recorded for this invoice.</p>{% endif %}
+    </div>
+</section>

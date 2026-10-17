@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ form_title|default('Add Product') }}{% endblock %}
+
+{% block content %}
+    <div class="page-toolbar">
+        <div><p>Enter the product details below. Your existing inventory stays saved.</p></div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('products_page') }}">Back to products</a>
+    </div>
+
+    <form method="post" action="{{ form_action|default(url_for('add_product_page')) }}" class="surface-card form-card">
+        <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <label class="form-label" for="name">Product name</label>
+            <input class="form-control" id="name" name="name" type="text"
+                   value="{{ form_data.get('name', '') }}" autocomplete="off" required>
+            <div class="form-help">Product names must be unique, regardless of capitalization.</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="sku">Product code / SKU</label>
+            <input class="form-control" id="sku" name="sku" value="{{ form_data.get('sku', '') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="category">Category</label>
+            <input class="form-control" id="category" name="category" value="{{ form_data.get('category', '') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="brand">Brand</label>
+            <input class="form-control" id="brand" name="brand" value="{{ form_data.get('brand', '') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="description">Description / model</label>
+            <input class="form-control" id="description" name="description" value="{{ form_data.get('description', '') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="unit">Unit of measurement</label>
+            <input class="form-control" id="unit" name="unit" value="{{ form_data.get('unit', 'each') }}" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="preferred_supplier_id">Preferred supplier (optional)</label>
+            <select class="form-select" id="preferred_supplier_id" name="preferred_supplier_id">
+                <option value="">No preferred supplier</option>
+                {% for supplier in suppliers|default([]) %}
+                    <option value="{{ supplier.id }}" {% if form_data.get('preferred_supplier_id', '')|string == supplier.id|string %}selected{% endif %}>{{ supplier.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="quantity">Quantity in stock</label>
+            <input class="form-control" id="quantity" name="quantity" type="number"
+                   min="0" step="1" value="{{ form_data.get('quantity', '') }}" required>
+            <div class="form-help">Enter a whole number of zero or more.</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="reorder_level">Minimum stock / reorder level</label>
+            <input class="form-control" id="reorder_level" name="reorder_level" type="number" min="0" step="1" value="{{ form_data.get('reorder_level', 5) }}" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="purchase_price">Purchase price (&#8377;)</label>
+            <input class="form-control" id="purchase_price" name="purchase_price" type="number"
+                   min="0" step="any" value="{{ form_data.get('purchase_price', '') }}">
+            <div class="form-help">Optional for existing products if the cost is unknown.</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="price">Selling price (&#8377;)</label>
+            <input class="form-control" id="price" name="price" type="number"
+                   min="0" step="any" value="{{ form_data.get('price', '') }}" required>
+            <div class="form-help">Enter the price for one unit.</div>
+        </div>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit">{{ submit_label|default('Save product') }}</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('products_page') }}">Cancel</a>
+        </div>
+    </form>
+{% endblock %}

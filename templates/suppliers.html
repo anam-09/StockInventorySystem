@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Suppliers{% endblock %}
+{% block content %}
+<div class="page-toolbar">
+    <div><p>Manage supplier contact details used for purchase records.</p></div>
+    <a class="btn btn-primary" href="{{ url_for('add_supplier_page') }}">Add Supplier</a>
+</div>
+<form class="surface-card p-3 mb-3" method="get" action="{{ url_for('suppliers_page') }}" role="search">
+    <label class="form-label" for="supplier-search">Search supplier name</label>
+    <div class="d-flex gap-2"><input class="form-control" id="supplier-search" name="q" value="{{ search_text }}" type="search" placeholder="Supplier name">
+    <button class="btn btn-primary" type="submit">Search</button>{% if search_text %}<a class="btn btn-outline-secondary" href="{{ url_for('suppliers_page') }}">Clear</a>{% endif %}</div>
+</form>
+{% if suppliers %}
+<section class="surface-card"><div class="surface-card-body table-responsive"><table class="table table-hover">
+<thead><tr><th>Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Address</th><th>Actions</th></tr></thead>
+<tbody>{% for supplier in suppliers %}<tr>
+<td class="product-name">{{ supplier.name }}</td><td>{{ supplier.contact_person }}</td><td>{{ supplier.phone }}</td><td>{{ supplier.email }}</td><td>{{ supplier.address }}</td>
+<td class="text-nowrap"><a class="table-action edit" href="{{ url_for('supplier_purchase_history_page', supplier_id=supplier.id) }}">Purchases</a> <a class="table-action edit" href="{{ url_for('edit_supplier_page', supplier_id=supplier.id) }}">Edit</a>
+<form class="d-inline" method="post" action="{{ url_for('delete_supplier_page', supplier_id=supplier.id) }}" onsubmit="return confirm('Delete this supplier? Suppliers with purchases cannot be deleted.');"><button class="table-action delete" type="submit">Delete</button></form></td>
+</tr>{% endfor %}</tbody></table></div></section>
+{% else %}<section class="surface-card empty-state"><h2>{% if search_text %}No suppliers match that search{% else %}No suppliers yet{% endif %}</h2><p>Add a supplier before recording a purchase.</p></section>{% endif %}
+{% endblock %}

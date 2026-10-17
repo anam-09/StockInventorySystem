@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Stock {{ movement_type|title }}{% endblock %}
+
+{% block content %}
+    <div class="page-toolbar">
+        <div><p>Choose a product and enter the number of units to {{ 'receive' if movement_type == 'in' else 'remove' }}.</p></div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('products_page') }}">Back to products</a>
+    </div>
+
+    {% if products %}
+        <form method="post" class="surface-card form-card">
+            <div class="mb-4">
+                <label class="form-label" for="product_index">Product</label>
+                <select class="form-select" id="product_index" name="product_index" required>
+                    <option value="">Choose a product</option>
+                    {% for product_index, product in products %}
+                        <option value="{{ product_index }}"
+                            {% if form_data.get('product_index', '') == product_index|string %}selected{% endif %}>
+                            {{ product.name }} — {{ product.quantity }} currently in stock
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label" for="quantity">Quantity to {{ 'receive' if movement_type == 'in' else 'remove' }}</label>
+                <input class="form-control" id="quantity" name="quantity" type="number"
+                       min="1" step="1" value="{{ form_data.get('quantity', '') }}" required>
+                <div class="form-help">Enter a positive whole number. Stock cannot go below zero.</div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn {{ 'btn-success' if movement_type == 'in' else 'btn-primary' }}" type="submit">
+                    Record Stock {{ movement_type|title }}
+                </button>
+                <a class="btn btn-outline-secondary" href="{{ url_for('products_page') }}">Cancel</a>
+            </div>
+        </form>
+    {% else %}
+        <section class="surface-card empty-state">
+            <span class="empty-state-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h16v12H4zM7 7.5V5h10v2.5"/></svg></span>
+            <h2>No products available</h2>
+            <p>Add a product before recording a stock movement.</p>
+            <a class="btn btn-primary mt-3" href="{{ url_for('add_product_page') }}">Add a product</a>
+        </section>
+    {% endif %}
+{% endblock %}

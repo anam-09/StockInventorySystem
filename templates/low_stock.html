@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Low Stock{% endblock %}
+
+{% block content %}
+    <div class="page-toolbar">
+        <div>
+            <p>Products at or below their individual reorder level need attention.</p>
+        </div>
+        <a class="btn btn-outline-primary" href="{{ url_for('reports_page') }}">View reports</a>
+    </div>
+
+    {% if products %}
+        <section class="surface-card" aria-labelledby="low-stock-title">
+            <div class="surface-card-header">
+                <div>
+                    <h2 class="section-title" id="low-stock-title">Low-stock inventory</h2>
+                    <p class="section-subtitle">{{ products|length }} product(s) at or below the threshold.</p>
+                </div>
+                <span class="low-stock-callout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 21 20H3L12 4Z"/><path d="M12 9v5m0 3h.01"/></svg>Attention needed</span>
+            </div>
+            <div class="surface-card-body table-responsive">
+                <table class="table table-hover">
+                    <thead><tr><th scope="col">Product</th><th scope="col">Available quantity</th><th scope="col">Reorder level</th><th scope="col">Status</th><th scope="col">Next step</th></tr></thead>
+                    <tbody>
+                        {% for product in products %}
+                            <tr>
+                                <td class="product-name">{{ product.name }}</td>
+                                <td>{{ product.quantity }} {{ product.unit or 'each' }}</td>
+                                <td>{{ product.reorder_level }} {{ product.unit or 'each' }}</td>
+                                <td>
+                                    {% if product.quantity == 0 %}
+                                        <span class="stock-badge out-stock">Out of stock</span>
+                                    {% else %}
+                                        <span class="stock-badge low-stock">Low stock</span>
+                                    {% endif %}
+                                </td>
+                                <td><a class="table-action edit" href="{{ url_for('stock_in_page') }}">Record stock in</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% else %}
+        <section class="surface-card empty-state">
+            <span class="empty-state-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>
+            <h2>Stock levels look good</h2>
+            <p>No products are currently at or below the low-stock threshold.</p>
+            <a class="btn btn-outline-primary mt-3" href="{{ url_for('products_page') }}">Review all products</a>
+        </section>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Record Purchase{% endblock %}
+{% block content %}
+<div class="page-toolbar"><div><p>Enter an invoice and its product lines. Totals are calculated by the server.</p></div><a class="btn btn-outline-secondary" href="{{ url_for('purchases_page') }}">Back to purchases</a></div>
+{% if not suppliers %}<div class="alert alert-warning">Add a supplier before recording purchases. <a href="{{ url_for('add_supplier_page') }}">Add supplier</a></div>{% endif %}
+{% if not products %}<div class="alert alert-warning">There are no products to purchase yet. <a href="{{ url_for('add_product_page') }}">Add product</a></div>{% endif %}
+<form method="post" action="{{ url_for('add_purchase_page') }}" class="surface-card form-card">
+<div class="row g-3 mb-4">
+<div class="col-md-6"><label class="form-label" for="supplier_id">Supplier</label><select class="form-select" id="supplier_id" name="supplier_id" required><option value="">Choose supplier</option>{% for supplier in suppliers %}<option value="{{ supplier.id }}" {% if form_data.get('supplier_id', '')|string == supplier.id|string %}selected{% endif %}>{{ supplier.name }}</option>{% endfor %}</select></div>
+<div class="col-md-6"><label class="form-label" for="invoice_reference">Invoice / reference number</label><input class="form-control" id="invoice_reference" name="invoice_reference" value="{{ form_data.get('invoice_reference', '') }}" required></div>
+<div class="col-md-6"><label class="form-label" for="purchase_date">Purchase date</label><input class="form-control" id="purchase_date" name="purchase_date" type="date" value="{{ form_data.get('purchase_date', '') }}" required></div>
+<div class="col-md-6"><label class="form-label" for="due_date">Due date (optional)</label><input class="form-control" id="due_date" name="due_date" type="date" value="{{ form_data.get('due_date', '') }}"></div>
+</div>
+<h2 class="section-title mb-3">Product lines</h2>
+<div id="purchase-lines">
+{% set product_ids = form_data.getlist('product_id') if form_data.getlist is defined else [] %}
+{% set quantities = form_data.getlist('quantity') if form_data.getlist is defined else [] %}
+{% set prices = form_data.getlist('unit_price') if form_data.getlist is defined else [] %}
+{% for row in range(3) %}
+<div class="row g-2 align-items-end purchase-line mb-3">
+<div class="col-md-5"><label class="form-label" for="product-{{ row }}">Product</label><select class="form-select" id="product-{{ row }}" name="product_id"><option value="">Choose product</option>{% for product in products %}<option value="{{ product.id }}" {% if product_ids|length > row and product_ids[row] == product.id|string %}selected{% endif %}>{{ product.name }}{% if product.sku %} · {{ product.sku }}{% endif %} (stock: {{ product.quantity }} {{ product.unit or 'each' }})</option>{% endfor %}</select></div>
+<div class="col-md-3"><label class="form-label" for="quantity-{{ row }}">Quantity</label><input class="form-control" id="quantity-{{ row }}" name="quantity" type="number" min="1" step="1" value="{{ quantities[row] if quantities|length > row else '' }}"></div>
+<div class="col-md-4"><label class="form-label" for="price-{{ row }}">Unit price (₹)</label><input class="form-control" id="price-{{ row }}" name="unit_price" type="number" min="0" step="any" value="{{ prices[row] if prices|length > row else '' }}"></div>
+</div>{% endfor %}
+</div>
+<button class="btn btn-outline-primary" id="add-purchase-line" type="button">Add another product line</button>
+<p class="form-help">Enter quantities as positive whole numbers. Invoice totals are calculated from the saved line values.</p>
+<div class="form-actions"><button class="btn btn-primary" type="submit" {% if not suppliers or not products %}disabled{% endif %}>Save purchase and update stock</button><a class="btn btn-outline-secondary" href="{{ url_for('purchases_page') }}">Cancel</a></div>
+</form>
+<script>
+document.getElementById('add-purchase-line').addEventListener('click', function () {
+    const lines = document.getElementById('purchase-lines');
+    const newLine = lines.querySelector('.purchase-line').cloneNode(true);
+    newLine.querySelectorAll('select, input').forEach(function (field) { field.value = ''; });
+    newLine.querySelectorAll('label').forEach(function (label) { label.removeAttribute('for'); });
+    lines.appendChild(newLine);
+});
+</script>
+{% endblock %}

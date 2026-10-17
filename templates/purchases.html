@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Purchases{% endblock %}
+{% block content %}
+<div class="page-toolbar"><div><p>Supplier invoices recorded against your inventory.</p></div><a class="btn btn-primary" href="{{ url_for('add_purchase_page') }}">Record Purchase</a></div>
+{% if purchases %}<section class="surface-card"><div class="surface-card-body table-responsive"><table class="table table-hover">
+<thead><tr><th>Purchase date</th><th>Supplier</th><th>Invoice / reference</th><th>Products and quantities</th><th>Total</th><th>Paid</th><th>Outstanding</th><th>Status</th><th>Details</th></tr></thead>
+<tbody>{% for purchase in purchases %}<tr><td>{{ purchase.purchase_date }}</td><td class="product-name">{{ purchase.supplier_name }}</td><td>{{ purchase.invoice_reference }}</td><td>{% for item in purchase_items[purchase.id] %}{{ item.product_name }} x {{ item.quantity }}{% if not loop.last %}, {% endif %}{% endfor %}</td><td>&#8377;{{ '%.2f'|format(purchase.total) }}</td><td>&#8377;{{ '%.2f'|format(purchase.amount_paid) }}</td><td>&#8377;{{ '%.2f'|format(purchase.outstanding) }}</td><td>{% if purchase.is_overdue %}<span class="stock-badge out-stock">Overdue</span>{% else %}{{ purchase.payment_status }}{% endif %}</td><td><a class="table-action edit" href="{{ url_for('purchase_detail_page', purchase_id=purchase.id) }}">View / pay</a></td></tr>{% endfor %}</tbody>
+</table></div></section>
+{% else %}<section class="surface-card empty-state"><h2>No purchases recorded</h2><p>Record a supplier invoice to add its quantities to stock.</p><a class="btn btn-primary mt-3" href="{{ url_for('add_purchase_page') }}">Record first purchase</a></section>{% endif %}
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ form_title|default('Add Customer') }}{% endblock %}
+{% block content %}
+<div class="page-toolbar"><div><p>Customer contact information for sales records.</p></div><a class="btn btn-outline-secondary" href="{{ url_for('customers_page') }}">Back to customers</a></div>
+<form method="post" action="{{ form_action|default(url_for('add_customer_page')) }}" class="surface-card form-card">
+{% for field, label, kind, required in [('name', 'Customer name', 'text', true), ('business_name', 'Business name (optional)', 'text', false), ('phone', 'Phone', 'tel', true), ('email', 'Email', 'email', true), ('address', 'Address', 'text', true)] %}<div class="mb-3"><label class="form-label" for="{{ field }}">{{ label }}</label><input class="form-control" id="{{ field }}" name="{{ field }}" type="{{ kind }}" value="{{ form_data.get(field, '') }}" {% if required %}required{% endif %}></div>{% endfor %}
+<p class="form-help">Phone number and email must be unique for each customer.</p><div class="form-actions"><button class="btn btn-primary" type="submit">{{ submit_label|default('Save customer') }}</button><a class="btn btn-outline-secondary" href="{{ url_for('customers_page') }}">Cancel</a></div>
+</form>
+{% endblock %}

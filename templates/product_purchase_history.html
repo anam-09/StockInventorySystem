@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Product Purchase History{% endblock %}
+{% block content %}
+<div class="page-toolbar"><div><p>Supplier, invoice, date, quantity, and unit price for each purchase.</p></div><a class="btn btn-outline-secondary" href="{{ url_for('products_page') }}">Back to products</a></div>
+<section class="surface-card"><div class="surface-card-header"><div><h2 class="section-title">{{ product.name }}</h2><p class="section-subtitle">{{ purchases|length }} purchase line(s)</p></div></div>
+{% if purchases %}<div class="surface-card-body table-responsive"><table class="table table-hover"><thead><tr><th>Supplier</th><th>Invoice</th><th>Date</th><th>Quantity</th><th>Purchase price</th></tr></thead><tbody>
+{% for purchase in purchases %}<tr><td><a href="{{ url_for('supplier_purchase_history_page', supplier_id=purchase.supplier_id) }}">{{ purchase.supplier_name }}</a></td><td><a href="{{ url_for('purchase_detail_page', purchase_id=purchase.purchase_id) }}">{{ purchase.invoice_reference }}</a></td><td>{{ purchase.purchase_date }}</td><td>{{ purchase.quantity }}</td><td>Rs {{ '%.2f'|format(purchase.unit_price) }}</td></tr>{% endfor %}
+</tbody></table></div>{% else %}<div class="surface-card-body"><p>No purchase history has been recorded for this product.</p></div>{% endif %}</section>
+{% endblock %}

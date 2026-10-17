@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Products{% endblock %}
+
+{% block content %}
+    <div class="page-toolbar">
+        <div>
+            <p>Manage product details and monitor stock levels.</p>
+        </div>
+        <a class="btn btn-primary" href="{{ url_for('add_product_page') }}">+ Add product</a>
+    </div>
+
+    {% if products %}
+        <section class="surface-card" aria-labelledby="product-list-title">
+            <div class="surface-card-header">
+                <div>
+                    <h2 class="section-title" id="product-list-title">Product inventory</h2>
+                    <p class="section-subtitle">{{ products|length }} matching record(s)</p>
+                </div>
+                {% if search_text %}
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('products_page') }}">Clear search</a>
+                {% endif %}
+            </div>
+            <div class="surface-card-body table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">Product / SKU</th>
+                            <th scope="col">Category / brand</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Selling price</th>
+                            <th scope="col">Purchase price</th>
+                            <th scope="col">Stock value</th>
+                            <th scope="col">Status</th>
+                            <th scope="col"><span class="visually-hidden">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product_index, product in products %}
+                            <tr>
+                                <td class="product-name">{{ product.name }}<br><small class="text-muted">{{ product.sku or 'No SKU' }}{% if product.description %} · {{ product.description }}{% endif %}</small></td>
+                                <td>{{ product.category or '—' }}<br><small class="text-muted">{{ product.brand or '—' }}</small></td>
+                                <td>{{ product.quantity }} {{ product.unit or 'each' }}</td>
+                                <td>&#8377;{{ "{:,.2f}".format(product.price) }}</td>
+                                <td>{% if product.purchase_price is not none %}&#8377;{{ "{:,.2f}".format(product.purchase_price) }}{% else %}—{% endif %}</td>
+                                <td>&#8377;{{ "{:,.2f}".format(product.quantity * product.price) }}</td>
+                                <td>
+                                    {% if product.quantity == 0 %}
+                                        <span class="stock-badge out-stock">Out of stock</span>
+                                    {% elif product.quantity <= product.reorder_level %}
+                                        <span class="stock-badge low-stock">Low stock</span>
+                                    {% else %}
+                                        <span class="stock-badge in-stock">In stock</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-nowrap">
+                                    <a class="table-action edit" href="{{ url_for('product_purchase_history_page', product_id=product.id) }}">Purchase history</a>
+                                    <a class="table-action edit" href="{{ url_for('product_sales_history_page', product_id=product.id) }}">Sales history</a>
+                                    <a class="table-action edit" href="{{ url_for('edit_product_page', product_index=product_index) }}">Edit</a>
+                                    <form class="d-inline" method="post"
+                                          action="{{ url_for('delete_product_page', product_index=product_index) }}"
+                                          onsubmit="return confirm('Delete this product? This cannot be undone.');">
+                                        <button class="table-action delete" type="submit">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% elif has_saved_products %}
+        <section class="surface-card empty-state">
+            <span class="empty-state-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg></span>
+            <h2>No matching products</h2>
+            <p>We couldn't find a product matching “{{ search_text }}”. Try a different search.</p>
+            <a class="btn btn-outline-primary mt-3" href="{{ url_for('products_page') }}">Clear search</a>
+        </section>
+    {% else %}
+        <section class="surface-card empty-state">
+            <span class="empty-state-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h16v12H4zM7 7.5V5h10v2.5"/></svg></span>
+            <h2>No products yet</h2>
+            <p>Add a product to begin tracking stock, unit prices, and inventory value.</p>
+            <a class="btn btn-primary mt-3" href="{{ url_for('add_product_page') }}">Add your first product</a>
+        </section>
+    {% endif %}
+{% endblock %}

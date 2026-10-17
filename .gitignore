@@ -1,0 +1,25 @@
+﻿.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local databases and business data
+*.db
+*.sqlite
+*.sqlite3
+*.db-*
+*.sqlite-*
+inventory.db
+
+# Local backups and temporary files
+backups/
+*.bak
+*.backup
+*.dump
+*.old
+products.json
+transactions.json

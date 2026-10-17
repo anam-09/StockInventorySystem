@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions{% endblock %}
+
+{% block content %}
+    <div class="page-toolbar">
+        <div><p>Review stock movements recorded through the website.</p></div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary" href="{{ url_for('stock_in_page') }}">Stock In</a>
+            <a class="btn btn-primary" href="{{ url_for('stock_out_page') }}">Stock Out</a>
+        </div>
+    </div>
+
+    <div class="alert alert-light border mb-4" role="note">
+        Historical transactions are not available for older stock changes unless entered separately. New sales are recorded here as Stock Out movements.
+    </div>
+
+    {% if transactions %}
+        <section class="surface-card" aria-labelledby="transactions-title">
+            <div class="surface-card-header">
+                <div>
+                    <h2 class="section-title" id="transactions-title">Movement history</h2>
+                    <p class="section-subtitle">Most recent activity appears first.</p>
+                </div>
+                <span class="stock-badge in-stock">{{ transactions|length }} records</span>
+            </div>
+            <div class="surface-card-body table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date and time</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Product</th>
+                            <th scope="col">Quantity moved</th>
+                            <th scope="col">Stock after</th>
+                            <th scope="col">Invoice / reference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                            <tr>
+                                <td class="text-nowrap">{{ transaction.date_time }}</td>
+                                <td>
+                                    {% if transaction.transaction_type == 'Stock In' %}
+                                        <span class="transaction-type stock-in">Stock In</span>
+                                    {% else %}
+                                        <span class="transaction-type stock-out">Stock Out</span>
+                                    {% endif %}
+                                </td>
+                                <td class="product-name">{{ transaction.product_name }}</td>
+                                <td>{{ transaction.quantity }}</td>
+                                <td>{{ transaction.stock_after }}</td>
+                                <td>{{ transaction.get('invoice_reference', '') }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% else %}
+        <section class="surface-card empty-state">
+            <span class="empty-state-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></span>
+            <h2>No stock movements yet</h2>
+            <p>When you record Stock In, Stock Out, or a sale, the movement will appear here.</p>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a class="btn btn-success" href="{{ url_for('stock_in_page') }}">Record Stock In</a>
+                <a class="btn btn-primary" href="{{ url_for('stock_out_page') }}">Record Stock Out</a>
+            </div>
+        </section>
+    {% endif %}
+{% endblock %}

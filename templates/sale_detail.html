@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Sale Details{% endblock %}
+{% block content %}
+<div class="page-toolbar"><div><p>Invoice {{ sale.invoice_reference }} for {{ sale.customer_name }} on {{ sale.sale_date }}.</p></div><div class="d-flex gap-2"><a class="btn btn-primary" href="#invoice-payments">Record receipt</a><a class="btn btn-outline-secondary" href="{{ url_for('sales_page') }}">Back to sales</a></div></div>
+<section class="surface-card mb-4"><div class="surface-card-header"><div><h2 class="section-title">{{ sale.customer_name }}</h2><p class="section-subtitle">Reference: {{ sale.invoice_reference }} · Date: {{ sale.sale_date }}</p></div><span class="stock-badge in-stock">&#8377;{{ '%.2f'|format(sale.total) }}</span></div><div class="surface-card-body table-responsive"><table class="table"><thead><tr><th>Product</th><th>Quantity</th><th>Selling unit price</th><th>Line total</th><th>Stock after</th></tr></thead><tbody>{% for item in items %}<tr><td class="product-name"><a href="{{ url_for('product_sales_history_page', product_id=item.product_id) }}">{{ item.product_name }}</a></td><td>{{ item.quantity }}</td><td>&#8377;{{ '%.2f'|format(item.unit_price) }}</td><td>&#8377;{{ '%.2f'|format(item.line_total) }}</td><td>{{ item.stock_after }}</td></tr>{% endfor %}</tbody></table></div></section><p><strong>Sale total:</strong> &#8377;{{ '%.2f'|format(sale.total) }}</p>
+<div id="invoice-payments">{% set invoice = sale %}{% set invoice_kind = 'sale' %}{% include '_invoice_payments.html' %}</div>
+{% endblock %}

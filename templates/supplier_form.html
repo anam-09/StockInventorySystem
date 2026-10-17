@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ form_title|default('Add Supplier') }}{% endblock %}
+{% block content %}
+<div class="page-toolbar"><div><p>Supplier contact information for purchase records.</p></div><a class="btn btn-outline-secondary" href="{{ url_for('suppliers_page') }}">Back to suppliers</a></div>
+<form method="post" action="{{ form_action|default(url_for('add_supplier_page')) }}" class="surface-card form-card">
+{% for field, label, kind in [('name', 'Supplier name', 'text'), ('contact_person', 'Contact person', 'text'), ('phone', 'Phone', 'tel'), ('email', 'Email', 'email'), ('address', 'Address', 'text')] %}
+<div class="mb-3"><label class="form-label" for="{{ field }}">{{ label }}</label><input class="form-control" id="{{ field }}" name="{{ field }}" type="{{ kind }}" value="{{ form_data.get(field, '') }}" required></div>
+{% endfor %}
+<div class="form-actions"><button class="btn btn-primary" type="submit">{{ submit_label|default('Save supplier') }}</button><a class="btn btn-outline-secondary" href="{{ url_for('suppliers_page') }}">Cancel</a></div>
+</form>
+{% endblock %}
