@@ -1,3 +1,5 @@
+import csv
+import io
 import math
 import json
 import re
@@ -7,7 +9,7 @@ from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-from flask import Flask, flash, redirect, render_template, request, url_for
+from flask import Flask, Response, flash, redirect, render_template, request, url_for
 from main import PRODUCT_FIELDS, database_connection, initialize_database, load_products, save_products
 
 app = Flask(__name__)
@@ -1285,9 +1287,8 @@ def customer_sales_history_page(customer_id):
     )
 
 
-@app.route("/payments")
-def payments_dashboard_page():
-    """Show live receivables/payables and filter invoice balances."""
+def payment_register_data():
+    """Build the filtered payment register shared by the page and CSV export."""
     initialize_database()
     kind_filter = request.args.get("kind", "all")
     status_filter = request.args.get("status", "all")
@@ -1354,11 +1355,72 @@ def payments_dashboard_page():
             continue
         filtered.append(invoice)
     filtered.sort(key=lambda row: (row["invoice_date"], row["id"]), reverse=True)
-    return render_template(
-        "payments.html", invoices=filtered, receivables=receivables, payables=payables,
-        partial_count=partial_count, unpaid_count=unpaid_count, overdue_count=overdue_count,
-        kind_filter=kind_filter, status_filter=status_filter, party_filter=request.args.get("party", ""),
-        date_from=date_from, date_to=date_to,
+    return {
+        "invoices": filtered,
+        "receivables": receivables,
+        "payables": payables,
+        "partial_count": partial_count,
+        "unpaid_count": unpaid_count,
+        "overdue_count": overdue_count,
+        "kind_filter": kind_filter,
+        "status_filter": status_filter,
+        "party_filter": request.args.get("party", ""),
+        "date_from": date_from,
+        "date_to": date_to,
+    }
+
+
+@app.route("/payments")
+def payments_dashboard_page():
+    """Show live receivables/payables and filter invoice balances."""
+    return render_template("payments.html", **payment_register_data())
+
+
+def spreadsheet_safe_text(value):
+    """Keep untrusted text from being interpreted as a spreadsheet formula."""
+    text = "" if value is None else str(value)
+    if text.lstrip("\ufeff\r\n\t ").startswith(("=", "+", "-", "@")):
+        return "'" + text
+    return text
+
+
+def csv_amount(value):
+    """Render a rupee amount as a two-decimal numeric CSV field."""
+    return f"{Decimal(str(value)).quantize(Decimal('0.01')):.2f}"
+
+
+@app.route("/payments/export.csv")
+def export_payments_csv():
+    """Download the same filtered invoice rows shown in the Payments register."""
+    register = payment_register_data()
+    output = io.StringIO(newline="")
+    output.write("\ufeff")
+    writer = csv.writer(output)
+    writer.writerow((
+        "Invoice Type", "Invoice Number", "Supplier/Customer Name", "Invoice Date",
+        "Due Date", "Invoice Total (INR)", "Amount Paid (INR)",
+        "Outstanding Balance (INR)", "Payment Status",
+    ))
+    for invoice in register["invoices"]:
+        writer.writerow((
+            "Sale" if invoice["invoice_kind"] == "sale" else "Purchase",
+            spreadsheet_safe_text(invoice["invoice_reference"]),
+            spreadsheet_safe_text(invoice["party_name"]),
+            spreadsheet_safe_text(invoice["invoice_date"]),
+            spreadsheet_safe_text(invoice["due_date"]),
+            csv_amount(invoice["total"]),
+            csv_amount(invoice["amount_paid"]),
+            csv_amount(invoice["outstanding"]),
+            spreadsheet_safe_text(
+                "Overdue" if invoice["is_overdue"] else invoice["payment_status"]
+            ),
+        ))
+
+    filename = f"payments_register_{date.today().isoformat()}.csv"
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 

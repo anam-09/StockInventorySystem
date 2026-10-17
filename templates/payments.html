@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Payment Dashboard{% endblock %}
 {% block content %}
-<div class="page-toolbar"><div><p>Current customer receivables, supplier payables, and invoice payment status.</p></div></div>
+{% set export_url = url_for('export_payments_csv', **request.args.to_dict()) %}
+<div class="page-toolbar"><div><p>Current customer receivables, supplier payables, and invoice payment status.</p></div><a class="btn btn-outline-primary" href="{{ export_url }}">Export CSV</a></div>
 <div class="row g-3 mb-4">
 <div class="col-12 col-sm-6 col-xl-3"><article class="card metric-card h-100"><div class="card-body"><p class="metric-label">Customer receivables</p><p class="metric-value">&#8377;{{ '{:,.2f}'.format(receivables) }}</p><small class="metric-note">Outstanding on sales invoices</small></div></article></div>
 <div class="col-12 col-sm-6 col-xl-3"><article class="card metric-card h-100"><div class="card-body"><p class="metric-label">Supplier payables</p><p class="metric-value">&#8377;{{ '{:,.2f}'.format(payables) }}</p><small class="metric-note">Outstanding on purchase invoices</small></div></article></div>
